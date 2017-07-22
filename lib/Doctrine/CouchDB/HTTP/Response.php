@@ -61,9 +61,17 @@ class Response
      */
     public function __construct( $status, array $headers, $body, $raw = false )
     {
+        if (!$raw) {
+            $parsed_body = str_replace(["\r\n", "\n"], "", $body);
+            $parsed_body = json_decode($parsed_body, true);
+            if ($parsed_body === null && json_last_error()) {
+                throw JsonDecodeException::fromLastJsonError();
+            }
+        }
+        
         $this->status  = (int) $status;
         $this->headers = $headers;
-        $this->body    = $raw ? $body : json_decode( $body, true );
+        $this->body    = $parsed_body;
     }
 }
 
